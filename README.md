@@ -6,11 +6,9 @@ This fork of EPiServer Quicksilver highlights the abilty to customize pricing wi
 * Change EPiServer's logic on which price it chooses when selecting prices for display and business processing
 * Change where EPiServer stores prices
 
-Read http://world.episerver.com/documentation/Items/Developers-Guide/EPiServer-Commerce/9/Pricing/Pricing/ prior to working with those code.
+Read http://world.episerver.com/documentation/Items/Developers-Guide/EPiServer-Commerce/9/Pricing/Pricing/ prior to working with this code.
 
-```
-Warning: This code is not intended for production usage and has not been performance tested. It is intended solely as a proof of concept.
-```
+**Warning: This code is not intended for production usage and has not been performance tested. It is intended solely as a proof of concept.**
 
 The following two classes are the main drivers, and are wired in via StructureMap at initialization time
 
