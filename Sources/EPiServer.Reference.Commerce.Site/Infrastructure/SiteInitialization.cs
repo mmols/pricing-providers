@@ -24,7 +24,9 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Newtonsoft.Json;
 using EPiServer.Editor;
+using EPiServer.Reference.Commerce.Shared.Services;
 using EPiServer.Reference.Commerce.Site.Features.Market.Services;
+using Mediachase.Commerce.Pricing;
 using StructureMap.Web;
 
 namespace EPiServer.Reference.Commerce.Site.Infrastructure
@@ -75,6 +77,8 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
                 c.For<IAuthenticationManager>().Use(() => owinContextFunc().Authentication);
                 c.For<IOwinContext>().Use(() => owinContextFunc());
                 c.For<IModelBinderProvider>().Use<ModelBinderProvider>();
+                c.For<IPriceService>().Use<MyPriceService>();
+                c.For<IPriceDetailService>().Use<InMemoryPriceDetailService>();
             });
 
             DependencyResolver.SetResolver(new StructureMapDependencyResolver(context.Container));

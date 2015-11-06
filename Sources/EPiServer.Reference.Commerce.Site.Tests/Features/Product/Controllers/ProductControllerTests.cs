@@ -193,78 +193,6 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Product.Controllers
         }
 
         [TestMethod]
-        public void Index_WhenSelectedVariationExist_ShouldSetOriginalPriceToDefaultPrice()
-        {
-            FashionProduct fashionProduct = null;
-            FashionVariant fashionVariant = null;
-            ProductController productController = null;
-            Mock<IPriceValue> mockDefaultPrice = null;
-            ActionResult actionResult = null;
-
-            // Setup
-            {
-                fashionProduct = CreateFashionProduct();
-                fashionVariant = CreateFashionVariant();
-                SetRelation(fashionProduct, fashionVariant);
-
-                mockDefaultPrice = CreatePriceValueMock(25);
-                SetDefaultPriceService(mockDefaultPrice.Object);
-
-                var mockDiscountPrice = CreatePriceValueMock(20);
-                SetDiscountPriceService(mockDiscountPrice.Object);
-
-                productController = CreateController();
-            }
-
-            // Execute
-            {
-                actionResult = productController.Index(fashionProduct, fashionVariant.Code);
-            }
-
-            // Assert
-            {
-                var model = (FashionProductViewModel)((ViewResultBase)actionResult).Model;
-                Assert.AreEqual<Money>(mockDefaultPrice.Object.UnitPrice, model.OriginalPrice);
-            }
-        }
-
-        [TestMethod]
-        public void Index_WhenSelectedVariationExist_ShouldSetPriceToDiscountPrice()
-        {
-            FashionProduct fashionProduct = null;
-            FashionVariant fashionVariant = null;
-            ProductController productController = null;
-            Mock<IPriceValue> mockDiscountPrice = null;
-            ActionResult actionResult = null;
-
-            // Setup
-            {
-                fashionProduct = CreateFashionProduct();
-                fashionVariant = CreateFashionVariant();
-                SetRelation(fashionProduct, fashionVariant);
-
-                var mockDefaultPrice = CreatePriceValueMock(25);
-                SetDefaultPriceService(mockDefaultPrice.Object);
-
-                mockDiscountPrice = CreatePriceValueMock(20);
-                SetDiscountPriceService(mockDiscountPrice.Object);
-
-                productController = CreateController();
-            }
-
-            // Execute
-            {
-                actionResult = productController.Index(fashionProduct, fashionVariant.Code);
-            }
-
-            // Assert
-            {
-                var model = (FashionProductViewModel)((ViewResultBase)actionResult).Model;
-                Assert.AreEqual<Money>(mockDiscountPrice.Object.UnitPrice, model.Price);
-            }
-        }
-
-        [TestMethod]
         public void Index_WhenSelectedVariationExist_ShouldSetColorToSelectedVariationColor()
         {
             FashionProduct fashionProduct = null;
@@ -968,6 +896,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Product.Controllers
         }
 
         private Mock<IPromotionService> _mockPromotionService;
+        private Mock<IPromotionEntryService> _mockPromotionEntryService;
         private Mock<IContentLoader> _mockContentLoader;
         private Mock<IPriceService> _mockPriceService;
         private Mock<ICurrentMarket> _mockCurrentMarket;
@@ -997,6 +926,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Product.Controllers
             _mockPriceService = new Mock<IPriceService>();
             _mockRelationRepository = new Mock<IRelationRepository>();
             _mockPromotionService = new Mock<IPromotionService>();
+            _mockPromotionEntryService = new Mock<IPromotionEntryService>();
 
             var mockPublishedStateAssessor = new Mock<IPublishedStateAssessor>();
             mockPublishedStateAssessor.Setup(x => x.IsPublished(It.IsAny<IContent>(), It.IsAny<PublishedStateCondition>()))
@@ -1056,7 +986,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Product.Controllers
         private ProductController CreateController()
         {
             var controller = new ProductController(
-                _mockPromotionService.Object,
+                _mockPromotionEntryService.Object,
                 _mockContentLoader.Object,
                 _mockPriceService.Object,
                 _mockCurrentMarket.Object,

@@ -313,7 +313,10 @@
     <Compile Include="Services\HtmlDownloader.cs" />
     <Compile Include="Services\IHtmlDownloader.cs" />
     <Compile Include="Services\IMailService.cs" />
+    <Compile Include="Services\InMemoryPriceDatabase.cs" />
+    <Compile Include="Services\InMemoryPriceDetailService.cs" />
     <Compile Include="Services\MailService.cs" />
+    <Compile Include="Services\MyPriceService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

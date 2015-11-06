@@ -14,16 +14,6 @@
         <h3 class="product-title">@Model.DisplayName</h3>
         <span class="product-brand">@Html.PropertyFor(x => x.Brand)</span>
 
-        @if (hasDiscount)
-        {
-            <h4 class="product-price">@Html.PropertyFor(model => model.PlacedPrice, new { tag = "StyledMoney" })</h4>
-            <h4 class="product-price product-price--discount">@Html.PropertyFor(model => model.ExtendedPrice, new { tag = "StyledMoney" })</h4>
-        }
-        else
-        {
-            <h4 class="product-price">@Html.PropertyFor(model => model.ExtendedPrice, new { tag = "StyledMoney" })</h4>
-        }
-
     </a>
 
     @if (renderWishListButtons)

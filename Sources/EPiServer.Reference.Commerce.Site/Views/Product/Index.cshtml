@@ -1,4 +1,4 @@
-﻿@using System.Web
+﻿﻿﻿@using System.Web
 @model EPiServer.Reference.Commerce.Site.Features.Product.Models.FashionProductViewModel
 
 <div class="row jsProductDetails">
@@ -33,14 +33,19 @@
                 <h2 class="product-brand">@Html.PropertyFor(x => x.Product.Brand)</h2>
             </div>
             <div class="col-xs-12 col-sm-6">
-                @if (Model.Price < Model.OriginalPrice)
+                @if (Model.Prices != null)
                 {
-                    <h4 class="product-price">@Model.OriginalPrice.ToString()</h4>
-                    <h4 class="product-price--discount">@Model.Price.ToString()</h4>
-                }
-                else
-                {
-                    <h4 class="product-price">@Model.Price.ToString()</h4>
+                    foreach (var price in Model.Prices)
+                    {
+                        <h3>Buy @price.Quantity, pay:</h3>
+                        <div class="price @(price.DiscountPrice < price.Price ? "has-discount" : "")">
+                            <h4 class="product-price">@price.Price.ToString()</h4>
+                            @if (price.DiscountPrice < price.Price)
+                            {
+                                <h4 class="product-price--discount">@price.DiscountPrice.ToString()</h4>
+                            }
+                        </div>
+                    }
                 }
             </div>
         </div>

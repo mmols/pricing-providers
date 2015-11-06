@@ -1,46 +1,30 @@
-Quicksilver
+Custom Pricing Providers
 ===========
 
-This repository is the starter site for EPiServer Commerce based on MVC, aka "Quicksilver".
+This fork of EPiServer Quicksilver highlights the abilty to customize pricing within the EPiServer Framework. It includes a sample implementation of IPriceService and IPriceDetailService that demonstrate the ability to:
 
-Release Notes
--------------
+* Change EPiServer's logic on which price it chooses when selecting prices for display and business processing
+* Change where EPiServer stores prices
 
-This is release 1.1 of Quicksilver and more features will be added over time.
-The following is a list of features to be added in the future:
+Read http://world.episerver.com/documentation/Items/Developers-Guide/EPiServer-Commerce/9/Pricing/Pricing/ prior to working with those code.
 
-* In-store pickup.
-* Multi-shipment support.
-* Package and bundle support.
+```
+Warning: This code is not intended for production usage and has not been performance tested. It is intended solely as a proof of concept.
+```
 
-Changes in this release
+The following two classes are the main drivers, and are wired in via StructureMap at initialization time
+
+InMemoryPriceDetailService : IPriceDetailService
+---------------------
+This class demonstrates that EPiServer can utilize an alternate data store for pricing by implementing a custom IPriceDetailService. In this case, the alternate data store is the InMemoryPriceDatabase class, which stores pricing in a dictionary in memory. This database is seeded at startup with the following prices for all variants:
+
+* Price: $40 - Minimum Quantity: 0 - Sale Type: All Customers
+* Price: $37 - Minimum Quantity: 02 - Sale Type: All Customers
+* Price: $37 - Minimum Quantity: 02 - Sale Type: User for username "admin"
+
+MyPriceService : IPriceService
 -----------------------
 
-* Improved support for ASP.NET identity in Commerce Manager.
-* Bug #126401 - Null reference exception when rendering address in some cases. Fixed.
-* Bug #129168 - Quick view in Swedish was badly formatted. Fixed.
-* Bug #129209 - After log out, still possible to access edit mode in some cases. Fixed.
-* Bug #129197 - "Continue shopping" button not working on mobile browsers. Fixed.
-* Bug #129214 - Missing EPiServer standard header/footer rendering. Fixed.
+This class demonstrates that you can change how EPiServer chooses which price for display and business processing. This implementation implements the standard rules that EPiServer's standard implementation does, but also extends it to implement a custom Price type called "Price Override", which will be prioritized over other prices, regardless of their price types.
 
-Installation
-------------
-
-1.  Configure Visual Studio to add this package source: http://nuget.episerver.com/feed/packages.svc/. This allows missing packages to be downloaded, when the solution is built.
-2.  Open solution and build to download nuget package dependencies.
-3.  Search the solution for "ChangeThis" and review/update as described.
-4.  Run Setup\SetupDatabases.cmd to create the databases. In the unlucky event of errors please check the logs.  
-5.  Start the site (Debug-Start from Visual studio) and browse to http://localhost:50244 to finish installation. Login with admin/store.
-
-Note: SQL scripts are executed using Windows authentication so make sure your user has sufficient permissions.
-
-Styling
--------
-
-The styling of the site is done in [less](http://lesscss.org/). In order to be able to recompile the less files to css you will need to
-install [nodejs](https://nodejs.org/). If you have nodejs the less files will be recompiled into css on every build. From the command line
-you can also execute the following command in folder "Sources\EPiServer.Reference.Commerce.Site\":
-
-```
-msbuild -t:BuildLessFiles
-```
+See https://github.com/episerver/Quicksilver for Setup Instructions

@@ -31,15 +31,7 @@
                     <h2 class="product-brand">@Html.PropertyFor(x => x.Product.Brand)</h2>
                 </div>
                 <div class="col-xs-12 col-sm-6">
-                    @if (Model.Price < Model.OriginalPrice)
-                    {
-                        <h4 class="product-price">@Model.OriginalPrice.ToString()</h4>
-                        <h4 class="product-price--discount">@Model.Price.ToString()</h4>
-                    }
-                    else
-                    {
-                        <h4 class="product-price">@Model.Price.ToString()</h4>
-                    }
+
                 </div>
             </div>
             <div class="row">

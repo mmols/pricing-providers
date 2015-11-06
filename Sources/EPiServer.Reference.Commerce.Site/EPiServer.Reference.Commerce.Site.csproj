@@ -479,6 +479,7 @@
     <Compile Include="Features\ErrorHandling\Controllers\ErrorHandlingController.cs" />
     <Compile Include="Features\ErrorHandling\Models\ErrorViewModel.cs" />
     <Compile Include="Features\ErrorHandling\Pages\ErrorPage.cs" />
+    <Compile Include="Features\Product\Models\PriceViewModel.cs" />
     <Compile Include="Features\Shared\Extensions\StringExtensions.cs" />
     <Compile Include="Features\Payment\Models\CashOnDeliveryViewModel.cs" />
     <Compile Include="Features\Payment\Models\PaymentMethodViewModelResolver.cs" />

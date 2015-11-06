@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web.Mvc;
+using Castle.Core.Internal;
 using EPiServer.Commerce.Catalog.ContentTypes;
 using EPiServer.Commerce.Catalog.Linking;
 using EPiServer.Core;
@@ -17,12 +18,14 @@ using Mediachase.Commerce;
 using Mediachase.Commerce.Catalog;
 using Mediachase.Commerce.Pricing;
 using EPiServer.Reference.Commerce.Site.Features.Market.Services;
+using EPiServer.Security;
+using Mediachase.Commerce.Security;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Product.Controllers
 {
     public class ProductController : ContentController<FashionProduct>
     {
-        private readonly IPromotionService _promotionService;
+        private readonly IPromotionEntryService _promotionEntryService;
         private readonly IContentLoader _contentLoader;
         private readonly IPriceService _priceService;
         private readonly ICurrentMarket _currentMarket;
@@ -33,21 +36,22 @@ namespace EPiServer.Reference.Commerce.Site.Features.Product.Controllers
         private readonly FilterPublished _filterPublished;
         private readonly CultureInfo _preferredCulture;
         private readonly bool _isInEditMode;
+        private PromotionHelperFacade _promotionHelper;
 
         public ProductController(
-            IPromotionService promotionService,
+            IPromotionEntryService promotionEntryService,
             IContentLoader contentLoader,
             IPriceService priceService,
             ICurrentMarket currentMarket,
-            CurrencyService currencyservice, 
-            IRelationRepository relationRepository, 
-            AppContextFacade appContext, 
+            CurrencyService currencyservice,
+            IRelationRepository relationRepository,
+            AppContextFacade appContext,
             UrlResolver urlResolver,
             FilterPublished filterPublished,
             Func<CultureInfo> preferredCulture,
             Func<bool> isInEditMode)
         {
-            _promotionService = promotionService;
+            _promotionEntryService = promotionEntryService;
             _contentLoader = contentLoader;
             _priceService = priceService;
             _currentMarket = currentMarket;
@@ -82,15 +86,35 @@ namespace EPiServer.Reference.Commerce.Site.Features.Product.Controllers
             var market = _currentMarket.GetCurrentMarket();
             var currency = _currencyservice.GetCurrentCurrency();
 
-            var defaultPrice = GetDefaultPrice(variation, market, currency);
-            var discountPrice = GetDiscountPrice(defaultPrice, market, currency);
+            var priceFilters = new List<CustomerPricing>();
+
+            priceFilters.Add(CustomerPricing.AllCustomers);
+
+            var currentContact = PrincipalInfo.Current.Principal.GetCustomerContact();
+            if (currentContact != null)
+            {
+                priceFilters.Add(new CustomerPricing(CustomerPricing.PriceType.PriceGroup, currentContact.EffectiveCustomerGroup));
+                priceFilters.Add(new CustomerPricing(CustomerPricing.PriceType.UserName, PrincipalInfo.Current.Name));
+            }
+
+            var prices = _priceService.GetPrices(market.MarketId, DateTime.Now,
+                new CatalogKey(_appContext.ApplicationId, variation.Code),
+                new PriceFilter { Currencies = new Currency[] { currency }, CustomerPricing = priceFilters });
+
+            var priceViewModels = prices.Select(price => new PriceViewModel()
+            {
+                Quantity = price.MinQuantity,
+                Price = price.UnitPrice,
+                DiscountPrice = GetDiscountPrice(variation, price, market, currency)
+            }).OrderBy(x => x.Quantity);
+
+
 
             var viewModel = new FashionProductViewModel
             {
+                Prices = priceViewModels,
                 Product = currentContent,
                 Variation = variation,
-                OriginalPrice = defaultPrice != null ? defaultPrice.UnitPrice : new Money(0, currency),
-                Price = discountPrice,
                 Colors = variations
                     .Where(x => x.Size != null && x.Size == variation.Size)
                     .Select(x => new SelectListItem
@@ -146,8 +170,8 @@ namespace EPiServer.Reference.Commerce.Site.Features.Product.Controllers
 
         private static bool TryGetFashionVariant(IEnumerable<FashionVariant> variations, string variationCode, out FashionVariant variation)
         {
-            variation = !string.IsNullOrEmpty(variationCode) ? 
-                variations.FirstOrDefault(x => x.Code == variationCode) : 
+            variation = !string.IsNullOrEmpty(variationCode) ?
+                variations.FirstOrDefault(x => x.Code == variationCode) :
                 variations.FirstOrDefault();
 
             return variation != null;
@@ -171,14 +195,21 @@ namespace EPiServer.Reference.Commerce.Site.Features.Product.Controllers
                 currency);
         }
 
-        private Money GetDiscountPrice(IPriceValue defaultPrice, IMarket market, Currency currency)
+        private Money GetDiscountPrice(EntryContentBase content, IPriceValue defaultPrice, IMarket market, Currency currency)
         {
             if (defaultPrice == null)
             {
                 return new Money(0, currency);
             }
 
-            return _promotionService.GetDiscountPrice(defaultPrice.CatalogKey, market.MarketId, currency).UnitPrice;
+            if (_promotionHelper == null)
+            {
+                _promotionHelper = new PromotionHelperFacade();
+            }
+
+            _promotionHelper.Reset();
+
+            return _promotionEntryService.GetDiscountPrice(defaultPrice, content, currency, _promotionHelper).UnitPrice;
         }
     }
 }
